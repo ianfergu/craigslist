@@ -1,11 +1,12 @@
 from urllib import request
+import ast
 
 
 class Pull:
     def __init__(self):
         self.areNew = False
         self.mystr = ""
-        self.cars = {}
+        self.cars = []
 
 
     def getHtml(self):
@@ -30,15 +31,16 @@ class Pull:
         while (count < 1212):
             d = inText.readline()
             count += 1
-        while (d != ""):
+        while (d != "" and d.find("search-legend bottom") == -1):
             if d.find("http") != -1:
                 almostUrl = d
                 d = inText.readline()
-                while (d.find("price") == -1):
-                    d =inText.readline()
                 price = d
                 outText.write(almostUrl)
                 outText.write(price)
+            if d.find("time class") != -1:
+                time = d
+                outText.write(time)
             d = inText.readline()
         outText.close()
         inText.close()
@@ -46,13 +48,78 @@ class Pull:
     def fillCars(self):
         price = 0
         title = ""
-        time = ""
         link = ""
+        time = ""
 
         outText = open("out", "r")
         d = outText.readline()
         while (d != ""):
-            d.find("href=")
+            link = d[d.find('href="')+6: d.rfind('" class')]
+            d = outText.readline()
+            price = d[d.find('price">')+7: d.find("</")]
+            d = outText.readline()
+            time = d[d.find('title="')+7:d.rfind('"')]
+            d = outText.readline()
+            title = d[d.find('hdrlnk">')+8: d.rfind("</")]
+            self.cars.append([title, price, time, link])
+            d = outText.readline()
+            d = outText.readline()
+        outText.close()
+
+
+
+    def saveCars(self):
+        oldDic = open("oldDic", "r+")
+        for x in self.cars:
+            oldDic.write(str(x) + "\n")
+
+        oldDic.close()
+
+
+    def checkForNew(self):
+        oldDic = open("oldDic", "r+")
+        newCars = open("newCars", "w")
+        newCars.truncate()
+        oldCars = []
+
+        d = oldDic.readline()
+
+        while d != "":
+            try:
+                d = d[0:d.find("\n")]
+                d = ast.literal_eval(d)
+                oldCars.append(d)
+                d = oldDic.readline()
+            except Exception:
+                d = oldDic.readline()
+
+        size = len(oldCars)
+
+        self.cars = self.cars[:(size-len(self.cars))]
+        if len(self.cars) == 0:
+            self.areNew = False
+        else:
+            self.areNew = True
+
+        newCars.write(str(self.cars))
+        newCars.close()
+        oldDic.close()
+
+    def getNewCars(self):
+        if self.areNew:
+            return self.cars
+        else:
+            return "No new cars, sorry!"
+
+
+
+
+
+
+
+
+
+
 
 
 
