@@ -10,6 +10,8 @@ class Pull:
 
 
     def getHtml(self):
+        """Writes craiglist html to file named stored.
+        """
         try:
             url = request.urlopen("https://raleigh.craigslist.org/search/cto?search_distance=100&postal=27516&max_price=4000&auto_transmission=1")
             mybytes = url.read()
@@ -24,6 +26,9 @@ class Pull:
             print("failed to read url")
 
     def parseForOld(self):
+        """Parses through the HTML from stored and
+        turns it into the needed data. Data stored in out.
+        """
         outText = open("out", "w")
         inText = open("stored", "r")
         d = inText.readline()
@@ -46,6 +51,10 @@ class Pull:
         inText.close()
 
     def fillCars(self):
+        """Takes the data from out and puts
+        it into self.cars, a list of all current
+        cars for sale.
+        """
         price = 0
         title = ""
         link = ""
@@ -69,6 +78,8 @@ class Pull:
 
 
     def saveCars(self):
+        """"Writes the self.cars to a file called oldDic.
+        """
         oldDic = open("oldDic", "r+")
         for x in self.cars:
             oldDic.write(str(x) + "\n")
@@ -77,6 +88,9 @@ class Pull:
 
 
     def checkForNew(self):
+        """Compares oldDic to self.cars to identify
+        new advertisements, created since the last compile.
+        """
         oldDic = open("oldDic", "r+")
         newCars = open("newCars", "w")
         newCars.truncate()
@@ -106,11 +120,17 @@ class Pull:
         oldDic.close()
 
     def getNewCars(self):
+        """"returns the new car list.
+        """
         if self.areNew:
             return self.cars
         else:
             return "No new cars, sorry!"
 
+    def getAreNew(self):
+        """returns bool areNew.
+        """
+        return self.areNew
 
 
 
